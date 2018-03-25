@@ -55,9 +55,22 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
 
+  const source_large = document.getElementById('restaurant-img-large');
+  source_large.media = '(min-width: 800px)';
+  source_large.srcset = DBHelper.imageUrlForRestaurant(restaurant);
+
+  const source_medium = document.getElementById('restaurant-img-medium');
+  source_medium.media = '(min-width: 500px)';
+  source_medium.srcset = DBHelper.imageUrlForRestaurant(restaurant, '_medium');
+
   const image = document.getElementById('restaurant-img');
-  image.className = 'restaurant-img'
-  image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.className = 'restaurant-img';
+  image.alt = `${restaurant.name} Restaurant`;
+  image.title = restaurant.name;
+  image.src = DBHelper.imageUrlForRestaurant(restaurant, '_small');
+
+  const figcaption = document.getElementById('restaurant-img-figcaption');
+  figcaption.innerHTML = restaurant.name;
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -116,22 +129,32 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
  * Create review HTML and add it to the webpage.
  */
 createReviewHTML = (review) => {
-  const li = document.createElement('li');
+  const li      = document.createElement('li');
+  const article = document.createElement('article');
+  const aside   = document.createElement('aside');
+
   const name = document.createElement('p');
   name.innerHTML = review.name;
-  li.appendChild(name);
+  name.className = 'review review-name';
+  aside.appendChild(name);
 
   const date = document.createElement('p');
   date.innerHTML = review.date;
-  li.appendChild(date);
+  date.className = 'review review-date';
+  aside.appendChild(date);
+  article.appendChild(aside);
 
   const rating = document.createElement('p');
   rating.innerHTML = `Rating: ${review.rating}`;
-  li.appendChild(rating);
+  rating.className = 'review review-rating';
+  article.appendChild(rating);
 
   const comments = document.createElement('p');
   comments.innerHTML = review.comments;
-  li.appendChild(comments);
+  comments.className = 'review review-comments';
+  article.appendChild(comments);
+
+  li.appendChild(article);
 
   return li;
 }

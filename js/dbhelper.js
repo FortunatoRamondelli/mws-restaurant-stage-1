@@ -147,10 +147,29 @@ class DBHelper {
   }
 
   /**
+  * @description Add suffix to filename
+  * @param {string} filename - Name of file
+  * @param {string} suffix - Suffix to append
+  * @returns {string} filename with suffix (e.g. '1.jpg' '_small' -> 1_small.jpg)
+  */
+  static setSuffix(filename, suffix) {
+    const index = filename.lastIndexOf(".");
+    if (index === -1) {
+      return filename + suffix;
+    }
+    else {
+      return filename.substring(0, index)
+           + suffix
+           + filename.substring(   index);
+    }
+  }
+
+  /**
    * Restaurant image URL.
    */
-  static imageUrlForRestaurant(restaurant) {
-    return (`/img/${restaurant.photograph}`);
+  static imageUrlForRestaurant(restaurant, suffix = '') {
+    const filename = DBHelper.setSuffix(restaurant.photograph, suffix);
+    return (`/img/${filename}`);
   }
 
   /**
