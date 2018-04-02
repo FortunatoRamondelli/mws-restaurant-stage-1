@@ -160,7 +160,7 @@ createRestaurantHTML = (restaurant) => {
   picture.append(image);
 
   const figcaption = document.createElement('figcaption');
-  const name = document.createElement('h1');
+  const name = document.createElement('h2');
   name.innerHTML = restaurant.name;
   figcaption.append(name);
 

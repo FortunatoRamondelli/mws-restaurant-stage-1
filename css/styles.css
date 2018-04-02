@@ -65,7 +65,8 @@ section {
   display: block;
 }
 
-h1 {
+h1,
+h2 {
   text-align: center;
 }
 
@@ -217,9 +218,16 @@ li {
 #restaurants-list {
   background-color: #f3f3f3;
   margin: 0;
+  padding: 0;
   text-align: center;
   display: flex;
   flex-wrap: wrap;
+}
+
+#restaurants-list li {
+  padding: 0;
+  max-width: 100%;
+  margin: auto;
 }
 
 #restaurants-list article {
@@ -293,9 +301,14 @@ li {
   font-size: 20pt;
   font-weight: 200;
   letter-spacing: 0;
-  margin: 15px 0 30px;
+  margin: 15px 0;
   text-transform: uppercase;
   line-height: 1.1;
+  width: 100%;
+}
+
+.restaurant-figure {
+  margin: 0;
   width: 100%;
 }
 
@@ -409,6 +422,10 @@ aside {
 
   #restaurant-hours {
     width: 100%;
+  }
+
+  #restaurants-list li {
+    max-width: calc( 100% / 2 );
   }
 
 }
