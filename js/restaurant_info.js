@@ -28,7 +28,7 @@ fetchRestaurantFromURL = (callback) => {
     callback(null, self.restaurant)
     return;
   }
-  const id = getParameterByName('id');
+  const id = DBHelper.getParameterByName('id');
   if (!id) { // no id found in URL
     error = 'No restaurant id in URL'
     callback(error, null);
@@ -65,7 +65,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 
   const image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img';
-  image.alt = restaurant.alt;
+  image.alt = `${restaurant.name} Restaurant`;
   image.title = restaurant.name;
   image.src = DBHelper.imageUrlForRestaurant(restaurant, '_small');
 
@@ -167,20 +167,4 @@ fillBreadcrumb = (restaurant=self.restaurant) => {
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
   breadcrumb.appendChild(li);
-}
-
-/**
- * Get a parameter by name from page URL.
- */
-getParameterByName = (name, url) => {
-  if (!url)
-    url = window.location.href;
-  name = name.replace(/[\[\]]/g, '\\$&');
-  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
-    results = regex.exec(url);
-  if (!results)
-    return null;
-  if (!results[2])
-    return '';
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }

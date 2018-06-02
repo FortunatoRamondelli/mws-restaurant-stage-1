@@ -8,46 +8,94 @@ class DBHelper {
    * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-    const port = 8000 // Change this to your server port
-    return `http://localhost:${port}/data/restaurants.json`;
+    const port = 1337 // Change this to your server port
+    return `http://localhost:${port}/restaurants`;
+  }
+
+  static openDatabase () {
+    // If the browser doesn't support service worker,
+    // we don't care about having a database
+    if (!navigator.serviceWorker) {
+      console.log(`Browser doesn't support Service Workers`);
+      return Promise.resolve();
+    }
+
+    return idb.open('restaurant-db', 1, function (upgradeDb) {
+      const store = upgradeDb.createObjectStore('restaurants', { keyPath: 'id' });
+    });
+  }
+
+  /**
+   * Get a parameter by name from page URL.
+   */
+  static getParameterByName(name, url) {
+    if (!url)
+      url = window.location.href;
+    name = name.replace(/[\[\]]/g, '\\$&');
+    const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
+      results = regex.exec(url);
+    if (!results)
+      return null;
+    if (!results[2])
+      return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+  }
+
+  /**
+   * Fetch url.
+   */
+  static fetchUrl(url, callback) {
+    // getAll restaurants from indexedDB:
+    DBHelper.openDatabase().then(function (db) {
+      if (!db) return;
+
+      const id = DBHelper.getParameterByName('id');
+
+      return db.transaction('restaurants')
+               .objectStore('restaurants')
+               .getAll(id);
+    }).then(function (restaurants) {
+      if (restaurants.length === 0) return;
+      callback(null, restaurants);
+    });
+
+    fetch(url)
+      .then (response    => {
+        const messages = response.json();
+      //console.log(messages);
+        return messages;
+    }).then (restaurants => {
+        // put restaurants to indexedDB:
+        DBHelper.openDatabase().then(function (db) {
+          if (!db) return;
+          const store = db.transaction('restaurants', 'readwrite')
+                          .objectStore('restaurants');
+
+          if (Array.isArray(restaurants) ) {
+            restaurants.forEach(function (restaurant) {
+              store.put(restaurant);
+            });
+          } else {
+            store.put(restaurants);
+          }
+        });
+
+        callback(null, restaurants)
+    }).catch(error       => callback(`Request failed. Returned error: ${error}`, null));
   }
 
   /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', DBHelper.DATABASE_URL);
-    xhr.onload = () => {
-      if (xhr.status === 200) { // Got a success response from server!
-        const json = JSON.parse(xhr.responseText);
-        const restaurants = json.restaurants;
-        callback(null, restaurants);
-      } else { // Oops!. Got an error from server.
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
-      }
-    };
-    xhr.send();
+    DBHelper.fetchUrl(DBHelper.DATABASE_URL, callback);
   }
 
   /**
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
-    // fetch all restaurants with proper error handling.
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        const restaurant = restaurants.find(r => r.id == id);
-        if (restaurant) { // Got the restaurant
-          callback(null, restaurant);
-        } else { // Restaurant does not exist in the database
-          callback('Restaurant does not exist', null);
-        }
-      }
-    });
+    DBHelper.fetchUrl(`${DBHelper.DATABASE_URL}/${id}`, callback);
   }
 
   /**
@@ -168,7 +216,7 @@ class DBHelper {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant, suffix = '') {
-    const filename = DBHelper.setSuffix(restaurant.photograph, suffix);
+    const filename = DBHelper.setSuffix((restaurant.photograph || restaurant.id) + '.jpg', suffix);
     return (`/img/${filename}`);
   }
 
