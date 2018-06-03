@@ -196,7 +196,7 @@ class DBHelper {
   * @description Add suffix to filename
   * @param {string} filename - Name of file
   * @param {string} suffix - Suffix to append
-  * @returns {string} filename with suffix (e.g. '1.jpg' '_small' -> 1_small.jpg)
+  * @returns {string} filename with suffix (e.g. '1.webp' '_small' -> 1_small.webp)
   */
   static setSuffix(filename, suffix) {
     const index = filename.lastIndexOf(".");
@@ -214,7 +214,7 @@ class DBHelper {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant, suffix = '') {
-    const filename = DBHelper.setSuffix((restaurant.photograph || restaurant.id) + '.jpg', suffix);
+    const filename = DBHelper.setSuffix((restaurant.photograph || restaurant.id) + '.webp', suffix);
     return (`/img/${filename}`);
   }
 

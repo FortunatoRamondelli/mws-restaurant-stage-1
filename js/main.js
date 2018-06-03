@@ -81,6 +81,9 @@ window.initMap = () => {
     scrollwheel: false
   });
   updateRestaurants();
+  google.maps.event.addListenerOnce(self.map, 'idle', function () {
+    document.querySelector('iframe').title = 'Map of restaurants';
+  });
 }
 
 /**

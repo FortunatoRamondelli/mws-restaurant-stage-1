@@ -9,7 +9,7 @@ self.addEventListener('install', function(event) {
 
   const urlsToCache = [...css.map (fileName => `/css/${fileName}.css`),
                      //...data.map(fileName => `/data/${fileName}.json`),
-                       ...img.map (fileName => `/img/${fileName}.jpg`),
+                       ...img.map (fileName => `/img/${fileName}.webp`),
                        ...js.map  (fileName => `/js/${fileName}.js`),
                        ...html.map(fileName => `/${fileName}.html`)];
 
