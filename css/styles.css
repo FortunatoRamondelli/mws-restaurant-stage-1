@@ -85,7 +85,7 @@ img {
 
 #footer {
   background-color: #444;
-  color: #aaa;
+  color: #fff;
   letter-spacing: 1px;
   padding: 25px;
   text-align: center;
@@ -263,7 +263,6 @@ li {
 
 #restaurants-list p {
   margin: 0;
-  font-size: 11pt;
 }
 
 /* Align botton inside cards */
