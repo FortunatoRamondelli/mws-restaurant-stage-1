@@ -61,9 +61,7 @@ class DBHelper {
 
     fetch(url)
       .then (response    => {
-        const messages = response.json();
-      //console.log(messages);
-        return messages;
+        return response.json();
     }).then (restaurants => {
         // put restaurants to indexedDB:
         DBHelper.openDatabase().then(function (db) {

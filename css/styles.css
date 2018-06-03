@@ -231,6 +231,10 @@ li {
   margin: auto;
 }
 
+#restaurants-list li figure {
+  margin: 10px 0;
+}
+
 #restaurants-list article {
   margin: 15px auto;
   max-width: 250px;
@@ -427,6 +431,14 @@ aside {
 
   #restaurants-list li {
     max-width: calc( 100% / 2 );
+  }
+
+  #restaurants-list li:nth-child(odd) figure {
+    margin-right: 10px;
+  }
+
+  #restaurants-list li:nth-child(even) figure {
+    margin-left: 10px;
   }
 
 }
