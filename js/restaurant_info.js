@@ -1,46 +1,40 @@
 let restaurant;
 var map;
+let id;
 
 /**
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-    }
-  });
+  fetchRestaurantFromURL().then(restaurant => {
+    self.map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 16,
+      center: restaurant.latlng,
+      scrollwheel: false
+    });
+    fillBreadcrumb();
+    DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+  }).catch(error => console.error(error));
 }
 
 /**
  * Get current restaurant from page URL.
  */
-fetchRestaurantFromURL = (callback) => {
+fetchRestaurantFromURL = () => {
+  self.id = parseInt(getParameterByName('id'));
   if (self.restaurant) { // restaurant already fetched!
-    callback(null, self.restaurant)
-    return;
+    return Promise.resolve(self.restaurant);
   }
-  const id = DBHelper.getParameterByName('id');
-  if (!id) { // no id found in URL
-    error = 'No restaurant id in URL'
-    callback(error, null);
+  if (!self.id) { // no id found in URL
+    return Promise.reject('No restaurant id in URL')
   } else {
-    DBHelper.fetchRestaurantById(id, (error, restaurant) => {
-      self.restaurant = restaurant;
+    return DBHelper.fetchRestaurantById(self.id).then(restaurant => {
       if (!restaurant) {
-        console.error(error);
-        return;
+        return Promise.reject(`Restaurant with ID ${self.id} was not found`);
       }
+      self.restaurant = restaurant;
       fillRestaurantHTML();
-      callback(null, restaurant)
+      return restaurant;
     });
   }
 }
@@ -80,7 +74,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  fillReviewsHTML();
+  DBHelper.fetchReviews(restaurant.id).then(reviews => fillReviewsHTML(reviews));
 }
 
 /**
@@ -114,12 +108,13 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
 
   if (!reviews) {
     const noReviews = document.createElement('p');
+    noReviews.id = 'zero-reviews';
     noReviews.innerHTML = 'No reviews yet!';
     container.appendChild(noReviews);
     return;
   }
   const ul = document.getElementById('reviews-list');
-  reviews.forEach(review => {
+  reviews.reverse().forEach(review => {
     ul.appendChild(createReviewHTML(review));
   });
   container.appendChild(ul);
@@ -139,7 +134,7 @@ createReviewHTML = (review) => {
   aside.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  date.innerHTML = new Date(review.createdAt).toLocaleString();
   date.className = 'review review-date';
   aside.appendChild(date);
   article.appendChild(aside);
@@ -167,4 +162,52 @@ fillBreadcrumb = (restaurant=self.restaurant) => {
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
   breadcrumb.appendChild(li);
+}
+
+/**
+ * Get a parameter by name from page URL.
+ */
+getParameterByName = (name, url) => {
+  if (!url)
+    url = window.location.href;
+  name = name.replace(/[\[\]]/g, '\\$&');
+  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
+    results = regex.exec(url);
+  if (!results)
+    return null;
+  if (!results[2])
+    return '';
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+addReview = () => {
+    event.preventDefault(); // prevent the default action associated with the event from happening
+
+    const name     =          document.getElementById('name'                  ).value ;
+    const rating   = parseInt(document.querySelector ('#rating option:checked').value);
+    const comments =          document.getElementById('comments'              ).value ;
+
+    const review = {
+      restaurant_id: self.id,
+      name,
+      rating,
+      comments,
+      createdAt: new Date()
+    };
+
+    DBHelper.addReview(review);
+    fillReviewHTML(review);
+    document.getElementById('add-review-form').reset();
+}
+
+fillReviewHTML = (review) => {
+  const noReviews = document.getElementById('zero-reviews');
+  if (noReviews) {
+    noReviews.remove();
+  }
+
+  const container = document.getElementById('reviews-container');
+  const ul        = document.getElementById('reviews-list');
+  ul.insertBefore(createReviewHTML(review), ul.firstChild);
+  container.appendChild(ul);
 }

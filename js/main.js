@@ -16,14 +16,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
  * Fetch all neighborhoods and set their HTML.
  */
 fetchNeighborhoods = () => {
-  DBHelper.fetchNeighborhoods((error, neighborhoods) => {
-    if (error) { // Got an error
-      console.error(error);
-    } else {
-      self.neighborhoods = neighborhoods;
-      fillNeighborhoodsHTML();
-    }
-  });
+  DBHelper.fetchNeighborhoods().then(neighborhoods => {
+    self.neighborhoods = neighborhoods;
+    fillNeighborhoodsHTML();
+  }).catch(error => console.error(error));
 }
 
 /**
@@ -43,14 +39,10 @@ fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
  * Fetch all cuisines and set their HTML.
  */
 fetchCuisines = () => {
-  DBHelper.fetchCuisines((error, cuisines) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.cuisines = cuisines;
-      fillCuisinesHTML();
-    }
-  });
+  DBHelper.fetchCuisines().then(cuisines => {
+    self.cuisines = cuisines;
+    fillCuisinesHTML();
+  }).catch(error => console.error(error));
 }
 
 /**
@@ -99,14 +91,10 @@ updateRestaurants = () => {
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
 
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      resetRestaurants(restaurants);
-      fillRestaurantsHTML();
-    }
-  })
+  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood).then(restaurants => {
+    resetRestaurants(restaurants);
+    fillRestaurantsHTML();
+  }).catch(error => console.error(error));
 }
 
 /**
@@ -172,6 +160,19 @@ createRestaurantHTML = (restaurant) => {
 
   li.append(figure);
 
+  const favorite = document.createElement('button');
+  favorite.innerHTML = '♥';
+  favorite.classList.add('favorite');
+  updateFavoriteClassList(favorite, restaurant.is_favorite);
+
+  favorite.onclick = function() {
+    restaurant.is_favorite = !restaurant.is_favorite;
+    DBHelper.toggleFavorite(restaurant.id, restaurant.is_favorite);
+    updateFavoriteClassList(favorite, restaurant.is_favorite);
+  };
+
+  li.append(favorite);
+
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
   li.append(neighborhood);
@@ -188,6 +189,17 @@ createRestaurantHTML = (restaurant) => {
   return li
 }
 
+updateFavoriteClassList = (element, favorite) => {
+  if (favorite) {
+    element.classList.add   ('favorite_on' );
+    element.classList.remove('favorite_off');
+  }
+  else {
+    element.classList.add   ('favorite_off');
+    element.classList.remove('favorite_on' );
+  }
+}
+
 /**
  * Add markers for current restaurants to the map.
  */
@@ -199,17 +211,5 @@ addMarkersToMap = (restaurants = self.restaurants) => {
       window.location.href = marker.url
     });
     self.markers.push(marker);
-  });
-}
-
-// Check that service workers are registered
-if('serviceWorker' in navigator) {
-  // Use the window load event to keep the page load performant
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('../sw.js').then(function(registration) {
-      console.log("Service Worker registration worked: ", registration);
-    }).catch(function(error) {
-      console.error("Service Worker registration failed: ", error);
-    });
   });
 }

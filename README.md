@@ -3,7 +3,7 @@
 ##### _Three Stage Course Material Project - Restaurant Reviews_
 
 ## Project Overview
-1. To start development server follow the instructions here: [mws-restaurant-stage-2](https://github.com/FortunatoRamondelli/mws-restaurant-stage-2/blob/master/README.md)
+1. To start development server follow the instructions here: [mws-restaurant-stage-3](https://github.com/udacity/mws-restaurant-stage-3/blob/master/README.md)
 
 ### Project Overview: Stage 1
 
